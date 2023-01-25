@@ -1,17 +1,28 @@
 import { nanoid } from 'nanoid';
-import React, { useState } from 'react';
+import React, {useEffect, useRef, useState } from 'react';
 import Form from './components/Form/Form';
 import Todo from './components/Todo/Todo'
 import FilterButton from './components/FilterButton/FilterButton';
+
+
+const usePrevious = (value)=> {
+  const ref = useRef();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+}
 
 const FILTER_MAP = {
   All:() => true,
   Active:(task) => !task.completed,
   Completed: (task) => task.completed
 };
+
 const FILTER_NAMES = Object.keys(FILTER_MAP);
 
-function App(props) {
+const App = (props) => {
+  const listHeadingRef = useRef(null);
   
   const [filter, setFilter] = useState('All');
   const [tasks, setTasks] = useState(props.tasks);
@@ -77,8 +88,26 @@ function App(props) {
   const tasksNoun = taskList.length !== 1 ? 'tasks' : 'task';
   const headingText = `${taskList.length} ${tasksNoun} remaining`;
 
-      
   
+  const prevTaskLength = usePrevious(tasks.length);
+  
+  console.log('0 tareas actuales ', tasks.length);
+  console.log('0 tareas previas ', prevTaskLength);
+  console.log('0 actuales - previas ',tasks.length - prevTaskLength);
+
+  useEffect(() => {
+    console.log('1 tareas actuales ', tasks.length);
+    console.log('1 tareas previas ', prevTaskLength);
+    console.log('1 actuales - previas ',tasks.length - prevTaskLength);
+    console.log('==================================');
+    if (tasks.length - prevTaskLength === -1) {
+      listHeadingRef.current.focus();
+      console.log('esto lo logrò hacer');
+    }
+    else {console.log('algo salio mal aca');}
+  }, [tasks.length, prevTaskLength]);
+  
+
   return (
     <div className="todoapp stack-large">
       <h1>Simple To do</h1>
@@ -91,7 +120,10 @@ function App(props) {
 
       </div>
 
-      <h2 id="list-heading">{headingText}</h2>
+      <h2 id="list-heading" tabIndex="-1" ref={listHeadingRef}>
+        {headingText}
+      </h2>
+
 
       <ul
         //role="list"
